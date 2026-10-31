@@ -1,13 +1,6 @@
 
 import { useMemo } from "react";
-import {
-  DoorOpen,
-  CalendarCheck,
-  Clock3,
-  Activity,
-  ArrowUpRight,
-  Download,
-} from "lucide-react";
+
 
 import {
   BarChart,
@@ -22,6 +15,17 @@ import {
   Cell,
 } from "recharts";
 
+import {
+  DoorOpen,
+  CalendarCheck,
+  Clock3,
+  Activity,
+  ArrowUpRight,
+  Download,
+  Star,
+  MessageSquare,
+} from "lucide-react";
+
 import StatCard from "../components/StatCard.jsx";
 import BookingTable from "../components/BookingTable.jsx";
 
@@ -30,6 +34,7 @@ const pieColors = ["#635BFF", "#28B987", "#E9A23B"];
 export default function AdminDashboard({
   rooms,
   bookings,
+  feedback = [],
   onStatusChange,
   setPage,
 }) {
@@ -41,6 +46,22 @@ export default function AdminDashboard({
   const confirmed = bookings.filter(
     (b) => b.status === "Confirmed"
   ).length;
+  // Feedback statistics
+const totalReviews = feedback.length;
+
+const averageRating =
+  totalReviews > 0
+    ? (
+        feedback.reduce((sum, item) => sum + item.rating, 0) /
+        totalReviews
+      ).toFixed(1)
+    : "—";
+
+const recentFeedback = [...feedback].sort(
+  (a, b) =>
+    new Date(b.created_at || 0) -
+    new Date(a.created_at || 0)
+);
 
   // Weekly booking activity (Monday to Sunday)
   const weeklyBookings = useMemo(() => {
@@ -361,7 +382,66 @@ export default function AdminDashboard({
           compact
         />
       </section>
+{/* Student Feedback */}
+<section className="panel feedback-panel">
+  <div className="panel-heading">
+    <div>
+      <h2>Student Feedback</h2>
+      <p>Reviews and experiences shared by students</p>
+    </div>
 
+    <span className="mini-select">
+      {totalReviews} {totalReviews === 1 ? "Review" : "Reviews"}
+    </span>
+  </div>
+
+  <div className="feedback-summary">
+    <div className="feedback-rating">
+      <Star size={22} fill="#E9A23B" color="#E9A23B" />
+      <strong>{averageRating}</strong>
+      <span>Average rating</span>
+    </div>
+
+    <div className="feedback-total">
+      <MessageSquare size={20} />
+      <strong>{totalReviews}</strong>
+      <span>Total reviews</span>
+    </div>
+  </div>
+
+  <div className="feedback-reviews">
+    {recentFeedback.length === 0 ? (
+      <div className="empty-state">
+        No student feedback has been submitted yet.
+      </div>
+    ) : (
+      recentFeedback.map((item) => (
+        <article className="feedback-review" key={item.id}>
+          <div className="feedback-review-heading">
+            <div>
+              <strong>{item.student}</strong>
+              <span>{item.room || `Room ID: ${item.room_id}`}</span>
+            </div>
+
+            <div className="feedback-review-rating">
+              {"★".repeat(item.rating)}
+              {"☆".repeat(5 - item.rating)}
+              <b>{item.rating}/5</b>
+            </div>
+          </div>
+
+          <p>{item.comment}</p>
+
+          <span className="feedback-review-date">
+            {item.created_at
+              ? new Date(item.created_at).toLocaleString()
+              : "Date unavailable"}
+          </span>
+        </article>
+      ))
+    )}
+  </div>
+</section>
     </div>
   );
 }

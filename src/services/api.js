@@ -76,4 +76,17 @@ export const api = {
       booking: normalizeBooking(result.booking),
     };
   },
+  async getMyFeedback(student) {
+    return request(`/feedback/my?student=${encodeURIComponent(student)}`);
+  },
+  async getAllFeedback() {
+    return request("/feedback");
+  },
+
+  async submitFeedback(feedback) {
+    return request("/feedback", {
+      method: "POST",
+      body: JSON.stringify(feedback),
+    });
+  },
 };
