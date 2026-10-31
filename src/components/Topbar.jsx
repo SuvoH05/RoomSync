@@ -1,15 +1,5 @@
 import { Bell, Menu, Search, ChevronDown } from "lucide-react";
-
-export default function Topbar({ role, setMobileOpen }) {
-  return (
-    <header className="topbar">
-      <button className="icon-button mobile-menu" onClick={() => setMobileOpen(true)}><Menu size={21}/></button>
-      <div className="breadcrumb"><span>Workspace</span><b>/</b><strong>{role === "admin" ? "Administration" : "Student portal"}</strong></div>
-      <div className="topbar-actions">
-        <button className="top-search"><Search size={16}/><span>Quick search</span><kbd>⌘ K</kbd></button>
-        <button className="icon-button notification-button"><Bell size={19}/><i/></button>
-        <div className="top-user"><div className="avatar small-avatar">{role === "admin" ? "CA" : "AS"}</div><ChevronDown size={15}/></div>
-      </div>
-    </header>
-  );
+import { toast } from "sonner";
+export default function Topbar({role,setMobileOpen,user,onLogout}){
+ return <header className="topbar"><button className="icon-button mobile-menu" onClick={()=>setMobileOpen(true)}><Menu size={21}/></button><div className="breadcrumb"><span>Workspace</span><b>/</b><strong>{role==="admin"?"Administration":"Student portal"}</strong></div><div className="topbar-actions"><label className="top-search"><Search size={16}/><input placeholder="Search this workspace" onKeyDown={e=>{if(e.key==="Enter"&&e.currentTarget.value.trim())toast(`Quick search: ${e.currentTarget.value}`);}}/><kbd>↵</kbd></label><button className="icon-button notification-button" onClick={()=>toast("You're all caught up. No new notifications.")} aria-label="Notifications"><Bell size={19}/><i/></button><div className="top-user"><div className="avatar small-avatar">{user?.name?.split(" ").map(x=>x[0]).slice(0,2).join("")||"RS"}</div><ChevronDown size={15}/></div></div></header>;
 }
