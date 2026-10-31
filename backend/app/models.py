@@ -4,7 +4,14 @@ from sqlalchemy.orm import mapped_column
 
 from .database import Base
 
+from sqlalchemy import (
+    Boolean, ForeignKey, Integer, JSON, String,
+    Text, DateTime, UniqueConstraint
+)
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.sql import func
 
+from .database import Base
 class Room(Base):
     __tablename__ = "rooms"
 
@@ -54,3 +61,36 @@ class Booking(Base):
 
     status = mapped_column(String(20), default="Pending")
     student = mapped_column(String(100), nullable=False)
+
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id = mapped_column(Integer, primary_key=True, index=True)
+
+    booking_id = mapped_column(
+        String(30),
+        ForeignKey("bookings.id"),
+        nullable=False,
+        unique=True,
+        index=True
+    )
+
+    room_id = mapped_column(
+        Integer,
+        ForeignKey("rooms.id"),
+        nullable=False,
+        index=True
+    )
+
+    student = mapped_column(String(100), nullable=False)
+
+    rating = mapped_column(Integer, nullable=False)
+
+    comment = mapped_column(Text, nullable=False)
+
+    created_at = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )

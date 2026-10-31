@@ -50,4 +50,19 @@ class RoomCreate(BaseModel):
     allowed_purposes: list[str] = []
     image: Optional[str] = None
 
-        
+class FeedbackCreate(BaseModel):
+    booking_id: str
+    student: str
+    rating: int = Field(ge=1, le=5)
+    comment: str = Field(min_length=5, max_length=1000)
+
+class FeedbackResponse(BaseModel):
+    id: int
+    booking_id: str
+    room_id: int
+    student: str
+    rating: int
+    comment: str
+    created_at: Optional[str] = None
+
+
