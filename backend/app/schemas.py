@@ -34,3 +34,20 @@ class BookingResponse(BaseModel):
     group: int
     status: str
     student: str
+
+class BookingStatusUpdate(BaseModel):
+    status: str
+
+
+class RoomCreate(BaseModel):
+    name: str
+    code: str
+    building: str
+    capacity: int = Field(gt=0)
+    type: str = "General"
+    floor: str = "Campus"
+    facilities: list[str] = []
+    allowed_purposes: list[str] = []
+    image: Optional[str] = None
+
+        

@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from app.schemas import BookingStatusUpdate
 from app.database import get_db
 from app.models import Booking, Room
 from app.schemas import BookingCreate
@@ -72,6 +72,73 @@ def create_booking(
 
     return {
         "message": "Booking created successfully",
+        "booking": {
+            "id": booking.id,
+            "roomId": booking.room_id,
+            "room": booking.room,
+            "code": booking.code,
+            "date": booking.date,
+            "start": booking.start,
+            "end": booking.end,
+            "purpose": booking.purpose,
+            "group": booking.group_size,
+            "status": booking.status,
+            "student": booking.student
+        }
+    }
+
+@router.patch("/{booking_id}/status")
+def update_booking_status(
+    booking_id: str,
+    request: BookingStatusUpdate,
+    db: Session = Depends(get_db)
+):
+    if request.status not in ["Confirmed", "Cancelled"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid booking status."
+        )
+
+    booking = db.query(Booking).filter(
+        Booking.id == booking_id
+    ).with_for_update().first()
+
+    if not booking:
+        raise HTTPException(
+            status_code=404,
+            detail="Booking not found."
+        )
+
+    if booking.status != "Pending":
+        raise HTTPException(
+            status_code=409,
+            detail="Only pending bookings can be updated."
+        )
+
+    if request.status == "Confirmed":
+        other_confirmed = db.query(Booking).filter(
+            Booking.room_id == booking.room_id,
+            Booking.date == booking.date,
+            Booking.status == "Confirmed",
+            Booking.id != booking.id
+        ).all()
+
+        for other in other_confirmed:
+            if (
+                booking.start < other.end
+                and other.start < booking.end
+            ):
+                raise HTTPException(
+                    status_code=409,
+                    detail="Cannot approve: another confirmed booking overlaps."
+                )
+
+    booking.status = request.status
+    db.commit()
+    db.refresh(booking)
+
+    return {
+        "message": f"Booking {request.status.lower()} successfully.",
         "booking": {
             "id": booking.id,
             "roomId": booking.room_id,
